@@ -2,6 +2,8 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import api from "../../utils/api";
+import axios from "axios";
 
 const LoginContainer = styled(Box)({
   display: "flex",
@@ -117,6 +119,12 @@ const StyledBox = styled("span")<{ checked: boolean }>(({ checked }) => ({
   }),
 }));
 
+const ErrorText = styled(Typography)({
+  height: "0.75rem",
+  fontSize: "0.75rem",
+  color: "#EE0000",
+});
+
 const LoginButton = styled(Button)({
   width: "16rem",
   height: "2.5rem",
@@ -131,8 +139,41 @@ const LoginButton = styled(Button)({
 
 const LoginPage = () => {
   const navigate = useNavigate();
-
   const [checked, setChecked] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const res = await api.post("/user/login", { email, password });
+
+      if (res.status === 200) {
+        sessionStorage.setItem("token", res.data.token);
+        api.defaults.headers["authorization"] = "Bearer " + res.data.token;
+
+        console.log("성공");
+        setEmail("");
+        setPassword("");
+        setError("");
+
+        navigate("/");
+      } else {
+        throw new Error(res.data);
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const message =
+          err.response?.data?.message ||
+          err.message ||
+          "로그인 중 오류가 발생했습니다";
+
+        setError(message);
+      } else {
+        setError("로그인 중 오류가 발생했습니다.");
+      }
+    }
+  };
 
   return (
     <LoginContainer>
@@ -141,8 +182,19 @@ const LoginPage = () => {
         <TextButton disableRipple onClick={() => navigate("/register")}>
           I DON'T HAVE AN ACCOUNT
         </TextButton>
-        <AuthInput label="*Email" variant="outlined" />
-        <AuthInput label="*Password" variant="outlined" />
+        <AuthInput
+          label="*Email"
+          variant="outlined"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <AuthInput
+          label="*Password"
+          variant="outlined"
+          type={checked ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <CheckboxWrapper>
           <HiddenCheckbox
             type="checkbox"
@@ -154,8 +206,9 @@ const LoginPage = () => {
         </CheckboxWrapper>
 
         <TextButton disableRipple>I FORGOT MY PASSWORD</TextButton>
+        <ErrorText>{error}</ErrorText>
 
-        <LoginButton>SIGN IN</LoginButton>
+        <LoginButton onClick={handleLogin}>SIGN IN</LoginButton>
       </LoginBox>
     </LoginContainer>
   );
