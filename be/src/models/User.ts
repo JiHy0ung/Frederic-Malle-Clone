@@ -1,6 +1,12 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, Model } from "mongoose";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const Schema = mongoose.Schema;
+
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY!;
 
 interface IUser extends Document {
   email: string;
@@ -9,7 +15,13 @@ interface IUser extends Document {
   level: "customer" | "admin";
 }
 
-const userSchema = new Schema<IUser>(
+interface IUserMethods {
+  generateToken(): string;
+}
+
+type UserModel = Model<IUser, {}, IUserMethods>;
+
+const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -18,6 +30,13 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true },
 );
+
+userSchema.methods.generateToken = function () {
+  const token = jwt.sign({ _id: this._id }, JWT_SECRET_KEY, {
+    expiresIn: "7d",
+  });
+  return token;
+};
 
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
@@ -28,6 +47,6 @@ userSchema.methods.toJSON = function () {
   return obj;
 };
 
-const User = mongoose.model<IUser>("User", userSchema);
+const User = mongoose.model<IUser, UserModel>("User", userSchema);
 
 export default User;
