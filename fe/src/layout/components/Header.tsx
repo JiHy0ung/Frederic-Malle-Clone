@@ -1,9 +1,13 @@
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Menu, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import { logout } from "../../features/user/userSlice";
+import type { RootState, AppDispatch } from "../../features/store";
 
 import Logo from "../../assets/Fredericmalle_logo.png";
 import { Search, User } from "lucide-react";
-import { useNavigate } from "react-router";
 
 const HeaderContainer = styled(Box)({
   position: "relative",
@@ -24,6 +28,7 @@ const SearchContainer = styled(Box)({
 
 const LogoImage = styled("img")({
   height: "30px",
+  cursor: "pointer",
 });
 
 const RightIcons = styled(Box)({
@@ -57,21 +62,108 @@ const NavItem = styled("li")({
   "&:hover": { color: "#eb3300" },
 });
 
+const StyledMenu = styled(Menu)({
+  "& .MuiPaper-root": {
+    backgroundColor: "#1a1a1a",
+    color: "white",
+    minWidth: "180px",
+    marginTop: "8px",
+    borderRadius: 0,
+  },
+});
+
+const StyledMenuItem = styled(MenuItem)({
+  fontSize: "0.875rem",
+  padding: "12px 20px",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    backgroundColor: "#2a2a2a",
+    color: "#eb3300",
+  },
+});
+
 const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.user,
+  );
+
+  console.log("user", user);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleUserIconClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (isAuthenticated) {
+      setAnchorEl(event.currentTarget);
+    } else {
+      navigate("/login");
+    }
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleMyPage = () => {
+    handleClose();
+    navigate("/mypage");
+  };
+
+  const handleLogout = () => {
+    handleClose();
+    dispatch(logout());
+    navigate("/");
+  };
+
   return (
     <HeaderContainer>
       <SearchContainer>
-        <LogoImage src={Logo} alt="logo-image" />
+        <LogoImage src={Logo} alt="logo-image" onClick={() => navigate("/")} />
         <RightIcons>
           <IconButton>
             <Search strokeWidth={1} color="white" />
           </IconButton>
-          <IconButton onClick={() => navigate("/login")}>
+          <IconButton onClick={handleUserIconClick}>
             <User strokeWidth={1} color="white" />
           </IconButton>
         </RightIcons>
       </SearchContainer>
+
+      <StyledMenu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        {user && (
+          <Box sx={{ padding: "12px 20px", borderBottom: "1px solid #333" }}>
+            <Box
+              sx={{
+                fontSize: "0.75rem",
+                color: "#999",
+                marginBottom: "0.25rem",
+              }}
+            >
+              안녕하세요,
+            </Box>
+            <Box sx={{ fontSize: "0.875rem", fontWeight: 500 }}>
+              {user.name}님
+            </Box>
+          </Box>
+        )}
+        <StyledMenuItem onClick={handleMyPage}>마이페이지</StyledMenuItem>
+        <StyledMenuItem onClick={handleLogout}>로그아웃</StyledMenuItem>
+      </StyledMenu>
+
       <MenuContainer>
         <Nav>
           <NavItem>THE ICONICS</NavItem>

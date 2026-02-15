@@ -2,7 +2,9 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import api from "../../utils/api";
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser, clearErrors } from "../../features/user/userSlice";
+import type { AppDispatch, RootState } from "../../features/store";
 
 const RegisterContainer = styled(Box)({
   display: "flex",
@@ -27,6 +29,7 @@ const RegisterTitle = styled(Typography)({
   alignSelf: "center",
   alignItems: "center",
   fontSize: "1.5625rem",
+  fontWeight: 500,
 });
 
 const TextButton = styled(Button)({
@@ -41,6 +44,7 @@ const TextButton = styled(Button)({
   "&:hover": {
     color: "#EE0000",
     textDecoration: "underline",
+    background: "none",
   },
 });
 
@@ -61,6 +65,28 @@ const AuthInput = styled(TextField)({
     "& .MuiOutlinedInput-notchedOutline": {
       border: "1px solid #b4b4b4",
     },
+
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #666",
+    },
+
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #000",
+    },
+  },
+
+  "& .MuiOutlinedInput-root.Mui-error": {
+    "& .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #EE0000",
+    },
+
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #EE0000",
+    },
+
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #EE0000",
+    },
   },
 
   "& .MuiInputLabel-root": {
@@ -69,6 +95,14 @@ const AuthInput = styled(TextField)({
     top: "50%",
     transform: "translate(14px, -50%) scale(1)",
     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+
+    "&.Mui-focused": {
+      color: "#000",
+    },
+
+    "&.Mui-error": {
+      color: "#EE0000",
+    },
   },
 
   "& .MuiInputLabel-shrink": {
@@ -83,6 +117,7 @@ const CheckboxWrapper = styled("label")({
   gap: "12px",
   cursor: "pointer",
   fontSize: "0.875rem",
+  userSelect: "none",
 });
 
 const HiddenCheckbox = styled("input")({
@@ -97,6 +132,12 @@ const StyledBox = styled("span")<{ checked: boolean }>(({ checked }) => ({
   alignItems: "center",
   justifyContent: "center",
   position: "relative",
+  flexShrink: 0,
+  transition: "all 0.2s ease",
+
+  "&:hover": {
+    borderColor: "#EE0000",
+  },
 
   ...(checked && {
     "&::before": {
@@ -119,9 +160,10 @@ const StyledBox = styled("span")<{ checked: boolean }>(({ checked }) => ({
 }));
 
 const ErrorText = styled(Typography)({
-  height: "0.75rem",
+  minHeight: "0.75rem",
   fontSize: "0.75rem",
   color: "#EE0000",
+  marginTop: "-0.5rem",
 });
 
 const RegisterButton = styled(Button)({
@@ -134,42 +176,134 @@ const RegisterButton = styled(Button)({
   color: "white",
   fontSize: "0.75rem",
   borderRadius: 0,
+  fontWeight: 500,
+  transition: "all 0.3s ease",
+
+  "&:hover": {
+    backgroundColor: "#CC0000",
+  },
+
+  "&:disabled": {
+    backgroundColor: "#999",
+    color: "#fff",
+    cursor: "not-allowed",
+  },
+});
+
+const StyledForm = styled("form")({
+  display: "contents",
 });
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const [formData, setFormData] = useState({
+    email: "",
+    name: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [passwordError, setPasswordError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    name: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
+
+  const { registrationError, loading } = useSelector(
+    (state: RootState) => state.user,
+  );
 
   const [checked, setChecked] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    try {
-      setError("");
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData({ ...formData, [field]: value });
 
-      if (password !== confirmPassword) {
-        throw new Error("비밀번호가 일치하지 않습니다.");
-      }
+    if (passwordError) setPasswordError("");
+    if (registrationError) dispatch(clearErrors());
 
-      const res = await api.post("/user", {
-        name,
-        email,
-        password,
-      });
-
-      if (res.status === 200) {
-        navigate("/login");
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("회원가입 중 오류가 발생했습니다.");
-      }
+    if (fieldErrors[field]) {
+      setFieldErrors({ ...fieldErrors, [field]: false });
     }
+  };
+
+  const validateForm = () => {
+    const { name, email, password, confirmPassword } = formData;
+    const errors = {
+      name: false,
+      email: false,
+      password: false,
+      confirmPassword: false,
+    };
+
+    if (!name.trim()) {
+      setPasswordError("이름을 입력해주세요.");
+      errors.name = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    if (!email.trim()) {
+      setPasswordError("이메일을 입력해주세요.");
+      errors.email = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setPasswordError("올바른 이메일 형식이 아닙니다.");
+      errors.email = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    if (!password) {
+      setPasswordError("비밀번호를 입력해주세요.");
+      errors.password = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    if (password.length < 6) {
+      setPasswordError("비밀번호는 6자 이상이어야 합니다.");
+      errors.password = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    if (!confirmPassword) {
+      setPasswordError("비밀번호 확인을 입력해주세요.");
+      errors.confirmPassword = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      setPasswordError("비밀번호 중복확인이 일치하지 않습니다.");
+      errors.password = true;
+      errors.confirmPassword = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    setFieldErrors(errors);
+    return true;
+  };
+
+  const handleRegister = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!validateForm()) return;
+
+    const { name, email, password } = formData;
+    dispatch(registerUser({ name, email, password }))
+      .unwrap()
+      .then(() => {
+        navigate("/login");
+      })
+      .catch(() => {});
   };
 
   return (
@@ -179,43 +313,60 @@ const RegisterPage = () => {
         <TextButton disableRipple onClick={() => navigate("/login")}>
           LOG IN NOW
         </TextButton>
-        <AuthInput
-          label="*Name"
-          variant="outlined"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <AuthInput
-          label="*Email"
-          variant="outlined"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <AuthInput
-          label="*Password"
-          variant="outlined"
-          value={password}
-          type={checked ? "text" : "password"}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <AuthInput
-          label="*Confirm Password"
-          variant="outlined"
-          value={confirmPassword}
-          type={checked ? "text" : "password"}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        <CheckboxWrapper>
-          <HiddenCheckbox
-            type="checkbox"
-            checked={checked}
-            onChange={() => setChecked(!checked)}
+
+        <StyledForm onSubmit={handleRegister}>
+          <AuthInput
+            label="*Name"
+            variant="outlined"
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+            error={fieldErrors.name}
+            disabled={loading}
           />
-          <StyledBox checked={checked} />
-          Show password
-        </CheckboxWrapper>
-        <ErrorText>{error}</ErrorText>
-        <RegisterButton onClick={handleSubmit}>SIGN IN</RegisterButton>
+          <AuthInput
+            label="*Email"
+            variant="outlined"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            error={fieldErrors.email}
+            disabled={loading}
+          />
+          <AuthInput
+            label="*Password"
+            variant="outlined"
+            value={formData.password}
+            type={checked ? "text" : "password"}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            error={fieldErrors.password}
+            disabled={loading}
+          />
+          <AuthInput
+            label="*Confirm Password"
+            variant="outlined"
+            value={formData.confirmPassword}
+            type={checked ? "text" : "password"}
+            onChange={(e) =>
+              handleInputChange("confirmPassword", e.target.value)
+            }
+            error={fieldErrors.confirmPassword}
+            disabled={loading}
+          />
+          <CheckboxWrapper>
+            <HiddenCheckbox
+              type="checkbox"
+              checked={checked}
+              onChange={() => setChecked(!checked)}
+              disabled={loading}
+            />
+            <StyledBox checked={checked} />
+            Show password
+          </CheckboxWrapper>
+          <ErrorText>{passwordError || registrationError}</ErrorText>
+          <RegisterButton type="submit" disabled={loading}>
+            {loading ? "처리 중..." : "SIGN UP"}
+          </RegisterButton>
+        </StyledForm>
       </RegisterBox>
     </RegisterContainer>
   );

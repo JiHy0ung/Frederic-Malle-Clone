@@ -2,8 +2,9 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import api from "../../utils/api";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { loginWithEmail, clearErrors } from "../../features/user/userSlice";
+import type { RootState, AppDispatch } from "../../features/store";
 
 const LoginContainer = styled(Box)({
   display: "flex",
@@ -28,6 +29,7 @@ const LoginTitle = styled(Typography)({
   alignSelf: "center",
   alignItems: "center",
   fontSize: "1.5625rem",
+  fontWeight: 500,
 });
 
 const TextButton = styled(Button)({
@@ -42,6 +44,7 @@ const TextButton = styled(Button)({
   "&:hover": {
     color: "#EE0000",
     textDecoration: "underline",
+    background: "none",
   },
 });
 
@@ -62,6 +65,28 @@ const AuthInput = styled(TextField)({
     "& .MuiOutlinedInput-notchedOutline": {
       border: "1px solid #b4b4b4",
     },
+
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #666",
+    },
+
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #000",
+    },
+  },
+
+  "& .MuiOutlinedInput-root.Mui-error": {
+    "& .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #EE0000",
+    },
+
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #EE0000",
+    },
+
+    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+      border: "1px solid #EE0000",
+    },
   },
 
   "& .MuiInputLabel-root": {
@@ -70,6 +95,14 @@ const AuthInput = styled(TextField)({
     top: "50%",
     transform: "translate(14px, -50%) scale(1)",
     transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+
+    "&.Mui-focused": {
+      color: "#000",
+    },
+
+    "&.Mui-error": {
+      color: "#EE0000",
+    },
   },
 
   "& .MuiInputLabel-shrink": {
@@ -84,6 +117,7 @@ const CheckboxWrapper = styled("label")({
   gap: "12px",
   cursor: "pointer",
   fontSize: "0.875rem",
+  userSelect: "none",
 });
 
 const HiddenCheckbox = styled("input")({
@@ -98,6 +132,12 @@ const StyledBox = styled("span")<{ checked: boolean }>(({ checked }) => ({
   alignItems: "center",
   justifyContent: "center",
   position: "relative",
+  flexShrink: 0,
+  transition: "all 0.2s ease",
+
+  "&:hover": {
+    borderColor: "#EE0000",
+  },
 
   ...(checked && {
     "&::before": {
@@ -120,9 +160,10 @@ const StyledBox = styled("span")<{ checked: boolean }>(({ checked }) => ({
 }));
 
 const ErrorText = styled(Typography)({
-  height: "0.75rem",
+  minHeight: "0.75rem",
   fontSize: "0.75rem",
   color: "#EE0000",
+  marginTop: "-0.5rem",
 });
 
 const LoginButton = styled(Button)({
@@ -135,44 +176,103 @@ const LoginButton = styled(Button)({
   color: "white",
   fontSize: "0.75rem",
   borderRadius: 0,
+  fontWeight: 500,
+  transition: "all 0.3s ease",
+
+  "&:hover": {
+    backgroundColor: "#CC0000",
+  },
+
+  "&:disabled": {
+    backgroundColor: "#999",
+    color: "#fff",
+    cursor: "not-allowed",
+  },
+});
+
+const StyledForm = styled("form")({
+  display: "contents",
 });
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [localError, setLocalError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    email: false,
+    password: false,
+  });
   const [checked, setChecked] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    try {
-      const res = await api.post("/user/login", { email, password });
+  const { loginError, loading } = useSelector((state: RootState) => state.user);
 
-      if (res.status === 200) {
-        sessionStorage.setItem("token", res.data.token);
-        api.defaults.headers["authorization"] = "Bearer " + res.data.token;
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData({ ...formData, [field]: value });
 
-        console.log("성공");
-        setEmail("");
-        setPassword("");
-        setError("");
+    if (localError) setLocalError("");
+    if (loginError) dispatch(clearErrors());
 
-        navigate("/");
-      } else {
-        throw new Error(res.data);
-      }
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        const message =
-          err.response?.data?.message ||
-          err.message ||
-          "로그인 중 오류가 발생했습니다";
-
-        setError(message);
-      } else {
-        setError("로그인 중 오류가 발생했습니다.");
-      }
+    if (fieldErrors[field]) {
+      setFieldErrors({ ...fieldErrors, [field]: false });
     }
+  };
+  const validateForm = () => {
+    const { email, password } = formData;
+    const errors = {
+      email: false,
+      password: false,
+    };
+
+    if (!email.trim()) {
+      setLocalError("이메일을 입력해주세요.");
+      errors.email = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setLocalError("올바른 이메일 형식이 아닙니다.");
+      errors.email = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    if (!password) {
+      setLocalError("비밀번호를 입력해주세요.");
+      errors.password = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    if (password.length < 6) {
+      setLocalError("비밀번호는 6자 이상이어야 합니다.");
+      errors.password = true;
+      setFieldErrors(errors);
+      return false;
+    }
+
+    setFieldErrors(errors);
+    return true;
+  };
+
+  const handleLogin = (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!validateForm()) return;
+
+    const { email, password } = formData;
+    dispatch(loginWithEmail({ email, password }))
+      .unwrap()
+      .then(() => {
+        navigate("/");
+      })
+      .catch(() => {});
   };
 
   return (
@@ -182,33 +282,47 @@ const LoginPage = () => {
         <TextButton disableRipple onClick={() => navigate("/register")}>
           I DON'T HAVE AN ACCOUNT
         </TextButton>
-        <AuthInput
-          label="*Email"
-          variant="outlined"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <AuthInput
-          label="*Password"
-          variant="outlined"
-          type={checked ? "text" : "password"}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <CheckboxWrapper>
-          <HiddenCheckbox
-            type="checkbox"
-            checked={checked}
-            onChange={() => setChecked(!checked)}
+
+        <StyledForm onSubmit={handleLogin}>
+          <AuthInput
+            label="*Email"
+            variant="outlined"
+            type="email"
+            value={formData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            error={fieldErrors.email}
+            disabled={loading}
           />
-          <StyledBox checked={checked} />
-          Show password
-        </CheckboxWrapper>
+          <AuthInput
+            label="*Password"
+            variant="outlined"
+            type={checked ? "text" : "password"}
+            value={formData.password}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            error={fieldErrors.password}
+            disabled={loading}
+          />
+          <CheckboxWrapper>
+            <HiddenCheckbox
+              type="checkbox"
+              checked={checked}
+              onChange={() => setChecked(!checked)}
+              disabled={loading}
+            />
+            <StyledBox checked={checked} />
+            Show password
+          </CheckboxWrapper>
 
-        <TextButton disableRipple>I FORGOT MY PASSWORD</TextButton>
-        <ErrorText>{error}</ErrorText>
+          <TextButton disableRipple disabled={loading}>
+            I FORGOT MY PASSWORD
+          </TextButton>
 
-        <LoginButton onClick={handleLogin}>SIGN IN</LoginButton>
+          <ErrorText>{localError || loginError}</ErrorText>
+
+          <LoginButton type="submit" disabled={loading}>
+            {loading ? "로그인 중..." : "SIGN IN"}
+          </LoginButton>
+        </StyledForm>
       </LoginBox>
     </LoginContainer>
   );
