@@ -34,21 +34,24 @@ export const loginWithEmail = createAsyncThunk<
   { rejectValue: string }
 >("user/loginWithEmail", async ({ email, password }, { rejectWithValue }) => {
   try {
-    const response = await api.post<{ data: IUser; token: string }>(
-      "/user/login",
-      {
-        email,
-        password,
-      },
-    );
+    const response = await api.post<{
+      status: string;
+      user: IUser;
+      token: string;
+    }>("/user/login", {
+      email,
+      password,
+    });
 
-    sessionStorage.setItem("token", response.data.token);
+    const token = response.data.token;
+    const userData = response.data.user;
 
-    api.defaults.headers["authorization"] = `Bearer ${response.data.token}`;
+    sessionStorage.setItem("token", token);
+    api.defaults.headers["authorization"] = `Bearer ${token}`;
 
     return {
-      user: response.data.data,
-      token: response.data.token,
+      user: userData,
+      token: token,
     };
   } catch (error: unknown) {
     if (error && typeof error === "object" && "error" in error) {
