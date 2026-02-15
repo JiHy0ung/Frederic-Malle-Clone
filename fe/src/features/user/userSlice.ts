@@ -38,7 +38,7 @@ export const loginWithEmail = createAsyncThunk<
       status: string;
       user: IUser;
       token: string;
-    }>("/user/login", {
+    }>("/auth/login", {
       email,
       password,
     });
