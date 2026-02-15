@@ -67,14 +67,8 @@ export const loginWithToken = createAsyncThunk<
   { rejectValue: string }
 >("user/loginWithToken", async (_, { rejectWithValue }) => {
   try {
-    const token = sessionStorage.getItem("token");
-
-    if (!token) {
-      return rejectWithValue("토큰이 없습니다");
-    }
-
     const response = await api.get("/user/me");
-    return response.data.user;
+    return response.data;
   } catch (error) {
     if (error && typeof error === "object" && "error" in error) {
       return rejectWithValue((error as { error: string }).error);
@@ -96,22 +90,18 @@ interface IUser {
 
 interface IUserState {
   user: IUser | null;
-  token: string | null;
   loading: boolean;
   loginError: string | null;
   registrationError: string | null;
   success: boolean;
-  isAuthenticated: boolean;
 }
 
 const initialState: IUserState = {
   user: null,
-  token: sessionStorage.getItem("token"),
   loading: false,
   registrationError: null,
   loginError: null,
   success: false,
-  isAuthenticated: !!sessionStorage.getItem("token"),
 };
 
 const userSlice = createSlice({
@@ -154,10 +144,8 @@ const userSlice = createSlice({
       .addCase(loginWithEmail.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token;
         state.loginError = null;
         state.success = true;
-        state.isAuthenticated = true;
       })
       .addCase(loginWithEmail.rejected, (state, action) => {
         state.loading = false;
@@ -170,22 +158,17 @@ const userSlice = createSlice({
       .addCase(loginWithToken.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload;
-        state.isAuthenticated = true;
       })
       .addCase(loginWithToken.rejected, (state) => {
         state.loading = false;
         state.user = null;
-        state.token = null;
-        state.isAuthenticated = false;
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
-        state.token = null;
         state.loading = false;
         state.loginError = null;
         state.registrationError = null;
         state.success = false;
-        state.isAuthenticated = false;
       });
   },
 });
