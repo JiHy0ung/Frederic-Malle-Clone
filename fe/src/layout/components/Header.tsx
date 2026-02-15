@@ -85,9 +85,7 @@ const StyledMenuItem = styled(MenuItem)({
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated, user } = useSelector(
-    (state: RootState) => state.user,
-  );
+  const { user } = useSelector((state: RootState) => state.user);
 
   console.log("user", user);
 
@@ -95,7 +93,7 @@ const Header = () => {
   const open = Boolean(anchorEl);
 
   const handleUserIconClick = (event: React.MouseEvent<HTMLElement>) => {
-    if (isAuthenticated) {
+    if (user) {
       setAnchorEl(event.currentTarget);
     } else {
       navigate("/login");
