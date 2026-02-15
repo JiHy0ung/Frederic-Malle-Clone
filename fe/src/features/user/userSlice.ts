@@ -68,7 +68,7 @@ export const loginWithToken = createAsyncThunk<
 >("user/loginWithToken", async (_, { rejectWithValue }) => {
   try {
     const response = await api.get("/user/me");
-    return response.data;
+    return response.data.user;
   } catch (error) {
     if (error && typeof error === "object" && "error" in error) {
       return rejectWithValue((error as { error: string }).error);
