@@ -45,5 +45,23 @@ const userController = {
             }
         }
     },
+    async getUser(req, res) {
+        try {
+            const { userId } = req;
+            const user = await User_1.default.findOne({ _id: userId });
+            if (user) {
+                return res.status(200).json({ status: "Success", user });
+            }
+            throw new Error("invalid token");
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                res.status(400).json({ status: "fail", error: err.message });
+            }
+            else {
+                res.status(400).json({ status: "fail", error: "Unknown error" });
+            }
+        }
+    },
 };
 exports.default = userController;

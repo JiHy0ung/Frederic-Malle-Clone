@@ -6,4 +6,6 @@ router.post("/", userController.createUser);
 
 router.post("/login", userController.loginWithEmail);
 
+router.get("/me", userController.getUser);
+
 export default router;
