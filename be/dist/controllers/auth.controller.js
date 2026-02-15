@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = __importDefault(require("../models/User"));
-const types_1 = __importDefault(require("bcryptjs/umd/types"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 dotenv_1.default.config();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 const authController = {
@@ -44,7 +44,7 @@ const authController = {
             const { email, password } = req.body;
             const user = await User_1.default.findOne({ email }, "-createdAt -updatedAt -___v");
             if (user) {
-                const isMatch = await types_1.default.compare(password, user.password);
+                const isMatch = await bcryptjs_1.default.compare(password, user.password);
                 if (isMatch) {
                     const token = await user.generateToken();
                     return res.status(200).json({ status: "Login Success", user, token });
