@@ -67,13 +67,21 @@ export const loginWithToken = createAsyncThunk<
   { rejectValue: string }
 >("user/loginWithToken", async (_, { rejectWithValue }) => {
   try {
+    const token = sessionStorage.getItem("token");
+
+    if (!token) {
+      return rejectWithValue("토큰이 없습니다");
+    }
+
     const response = await api.get("/user/me");
     return response.data.user;
   } catch (error) {
+    sessionStorage.removeItem("token");
+
     if (error && typeof error === "object" && "error" in error) {
       return rejectWithValue((error as { error: string }).error);
     }
-    return rejectWithValue("로그인 실패");
+    return rejectWithValue("토큰 로그인 실패");
   }
 });
 
