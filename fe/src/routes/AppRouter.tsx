@@ -16,7 +16,11 @@ const AppRouter = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    dispatch(loginWithToken());
+    const token = sessionStorage.getItem("token");
+
+    if (token) {
+      dispatch(loginWithToken());
+    }
   }, [dispatch]);
 
   return (
