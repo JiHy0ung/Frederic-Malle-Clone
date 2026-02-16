@@ -250,7 +250,7 @@ const LoginPage = () => {
       return false;
     }
 
-    if (password.length < 6) {
+    if (password.length < 5) {
       setLocalError("비밀번호는 6자 이상이어야 합니다.");
       errors.password = true;
       setFieldErrors(errors);
