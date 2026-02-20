@@ -17,7 +17,6 @@ const productController = {
         price,
         category,
         status,
-        isNew,
       } = req.body;
 
       const isDuplicate = await Product.findOne({ sku });

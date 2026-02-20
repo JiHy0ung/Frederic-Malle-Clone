@@ -9,7 +9,7 @@ dotenv_1.default.config();
 const productController = {
     async createProduct(req, res) {
         try {
-            const { sku, name, size, description, stock, image, price, category, status, isNew, } = req.body;
+            const { sku, name, size, description, stock, image, price, category, status, } = req.body;
             const isDuplicate = await Product_1.default.findOne({ sku });
             if (isDuplicate) {
                 throw new Error("이미 존재하는 sku입니다.");
@@ -24,7 +24,6 @@ const productController = {
                 price,
                 category,
                 status,
-                isNew,
             });
             await product.save();
             res.status(200).json({ status: "Add Item Success", product });

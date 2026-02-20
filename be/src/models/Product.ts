@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 interface IProduct extends Document {
   sku: string;
   name: string;
+  size: string[];
   image: string;
   category: string[];
   description: string;
@@ -18,6 +19,7 @@ const productSchema = new Schema<IProduct>(
   {
     sku: { type: String, required: true, unique: true },
     name: { type: String, required: true },
+    size: { type: [String], required: true },
     image: { type: String, required: true },
     category: { type: [String], required: true },
     description: { type: String, required: true },
