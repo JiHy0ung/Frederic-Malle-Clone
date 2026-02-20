@@ -35,7 +35,6 @@ const productController = {
         price,
         category,
         status,
-        isNew,
       });
 
       await product.save();
