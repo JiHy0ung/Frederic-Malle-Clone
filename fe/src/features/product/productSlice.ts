@@ -5,15 +5,12 @@ import {
 } from "@reduxjs/toolkit";
 import api from "../../utils/api";
 
-//
-// 🔥 1. 타입 정의
-//
 export interface IProduct {
   _id: string;
   sku: string;
   name: string;
   price: number;
-  stock: Record<string, number>; // 사이즈별 재고 구조
+  stock: Record<string, number>;
   image: string;
   status: string;
   description?: string;
@@ -36,9 +33,6 @@ const initialState: ProductState = {
   success: false,
 };
 
-//
-// ✅ 2. 상품 리스트 조회
-//
 export const getProductList = createAsyncThunk<
   IProduct[],
   { name?: string } | undefined,
@@ -57,9 +51,6 @@ export const getProductList = createAsyncThunk<
   }
 });
 
-//
-// ✅ 3. 상품 생성
-//
 export const createProduct = createAsyncThunk<
   IProduct,
   Partial<IProduct>,
@@ -76,9 +67,6 @@ export const createProduct = createAsyncThunk<
   }
 });
 
-//
-// ✅ 4. 상품 수정
-//
 export const editProduct = createAsyncThunk<
   IProduct,
   { id: string } & Partial<IProduct>,
@@ -95,9 +83,6 @@ export const editProduct = createAsyncThunk<
   }
 });
 
-//
-// ✅ 5. 상품 삭제
-//
 export const deleteProduct = createAsyncThunk<
   string,
   string,
@@ -114,9 +99,6 @@ export const deleteProduct = createAsyncThunk<
   }
 });
 
-//
-// 🔥 6. Slice
-//
 const productSlice = createSlice({
   name: "product",
   initialState,
@@ -136,9 +118,6 @@ const productSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
-      // =========================
-      // 🔹 GET LIST
-      // =========================
       .addCase(getProductList.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -152,9 +131,6 @@ const productSlice = createSlice({
         state.error = action.payload || "리스트 불러오기 실패";
       })
 
-      // =========================
-      // 🔹 CREATE
-      // =========================
       .addCase(createProduct.fulfilled, (state, action) => {
         state.productList.unshift(action.payload);
         state.success = true;
@@ -163,9 +139,6 @@ const productSlice = createSlice({
         state.error = action.payload || "생성 실패";
       })
 
-      // =========================
-      // 🔹 EDIT
-      // =========================
       .addCase(editProduct.fulfilled, (state, action) => {
         state.productList = state.productList.map((item) =>
           item._id === action.payload._id ? action.payload : item,
@@ -176,9 +149,6 @@ const productSlice = createSlice({
         state.error = action.payload || "수정 실패";
       })
 
-      // =========================
-      // 🔹 DELETE
-      // =========================
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.productList = state.productList.filter(
           (item) => item._id !== action.payload,
@@ -191,9 +161,6 @@ const productSlice = createSlice({
   },
 });
 
-//
-// ✅ 7. export
-//
 export const { setSelectedProduct, clearError, resetSuccess } =
   productSlice.actions;
 

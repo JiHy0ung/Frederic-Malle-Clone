@@ -63,13 +63,19 @@ const CloudinaryUploadWidget = ({
 
   return (
     <Button
-      variant="contained"
       size="small"
-      startIcon={<Cloud />}
+      startIcon={<Cloud strokeWidth={0.8} />}
       onClick={handleClick}
-      sx={{ ml: 1 }}
+      sx={{
+        color: "white",
+        px: 3,
+        fontWeight: "light",
+        fontSize: "0.75rem",
+        borderRadius: 0,
+        backgroundColor: "#eb3300",
+      }}
     >
-      Upload Image +
+      Upload Image
     </Button>
   );
 };

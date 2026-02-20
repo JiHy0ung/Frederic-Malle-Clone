@@ -6,17 +6,53 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  IconButton,
-  Chip,
   Typography,
   Box,
+  IconButton,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { Pencil, Trash2 } from "lucide-react";
 
 import type { IProduct } from "../../../features/product/productSlice";
 
+const StyledTableContainer = styled(TableContainer)({
+  width: "100%",
+  backgroundColor: "#fff",
+});
+
+const StyledTableHead = styled(TableHead)({
+  borderBottom: "1px solid #eaeaea",
+});
+
+const StyledHeaderCell = styled(TableCell)({
+  fontWeight: 400,
+  fontSize: "0.75rem",
+  letterSpacing: "0.08em",
+  color: "#888",
+  borderBottom: "1px solid #eaeaea",
+});
+
+const StyledRow = styled(TableRow)({
+  borderBottom: "1px solid #f3f3f3",
+  transition: "background 0.2s ease",
+  "&:hover": {
+    backgroundColor: "#fafafa",
+  },
+});
+
+const StyledCell = styled(TableCell)({
+  borderBottom: "none",
+  fontWeight: 300,
+  fontSize: "0.75rem",
+});
+
+const StatusText = styled(Typography)<{ $active: boolean }>(({ $active }) => ({
+  fontSize: "0.85rem",
+  letterSpacing: "0.05em",
+  color: $active ? "#000" : "#bbb",
+}));
+
 interface Props {
-  header?: string[];
   data: IProduct[];
   deleteItem: (id: string) => void;
   openEditForm: (product: IProduct) => void;
@@ -24,97 +60,109 @@ interface Props {
 
 const ProductTable: React.FC<Props> = ({ data, deleteItem, openEditForm }) => {
   return (
-    <TableContainer component={Paper} sx={{ width: "100%" }}>
+    <StyledTableContainer>
       <Table>
-        <TableHead>
+        <StyledTableHead>
           <TableRow>
-            <TableCell>#</TableCell>
-            <TableCell>SKU</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Category</TableCell>
-            <TableCell>Price</TableCell>
-            <TableCell>Stock</TableCell>
-            <TableCell>Image</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell align="right">Actions</TableCell>
+            <StyledHeaderCell>#</StyledHeaderCell>
+            <StyledHeaderCell>SKU</StyledHeaderCell>
+            <StyledHeaderCell>NAME</StyledHeaderCell>
+            <StyledHeaderCell>CATEGORY</StyledHeaderCell>
+            <StyledHeaderCell>PRICE</StyledHeaderCell>
+            <StyledHeaderCell>STOCK</StyledHeaderCell>
+            <StyledHeaderCell>IMAGE</StyledHeaderCell>
+            <StyledHeaderCell>STATUS</StyledHeaderCell>
+            <StyledHeaderCell>ACTIONS</StyledHeaderCell>
           </TableRow>
-        </TableHead>
+        </StyledTableHead>
 
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} align="center">
-                <Typography>등록된 상품이 없습니다.</Typography>
+              <TableCell colSpan={9} align="center">
+                <Typography sx={{ py: 6, color: "#999" }}>
+                  No products available.
+                </Typography>
               </TableCell>
             </TableRow>
           ) : (
             data.map((item, index) => (
-              <TableRow key={item?._id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{item?.sku}</TableCell>
-                <TableCell>{item?.name}</TableCell>
+              <StyledRow key={item?._id ?? index}>
+                <StyledCell>{index + 1}</StyledCell>
+                <StyledCell>{item?.sku}</StyledCell>
+                <StyledCell sx={{ fontWeight: 400 }}>{item?.name}</StyledCell>
 
-                <TableCell>
+                <StyledCell>
                   {item?.category?.length ? item?.category?.join(", ") : "-"}
-                </TableCell>
+                </StyledCell>
 
-                <TableCell>₩ {item?.price?.toLocaleString()}</TableCell>
+                <StyledCell align="center">
+                  ₩ {item?.price?.toLocaleString()}
+                </StyledCell>
 
-                <TableCell>
+                <StyledCell>
                   {Object.entries(item?.stock || {}).map(([size, qty]) => (
-                    <Typography key={`${item._id}-${size}`} variant="body2">
-                      {size.toUpperCase()} : {qty}
+                    <Typography
+                      key={`${item._id}-${size}`}
+                      variant="body2"
+                      sx={{ fontSize: "0.8rem" }}
+                    >
+                      {size.toUpperCase()} · {qty}
                     </Typography>
                   ))}
-                </TableCell>
+                </StyledCell>
 
-                <TableCell>
+                <StyledCell>
                   {item?.image ? (
                     <Box
                       component="img"
-                      src={item?.image}
-                      alt={item?.name}
+                      src={item.image}
+                      alt={item.name}
                       sx={{
-                        width: 60,
-                        height: 60,
+                        width: 50,
+                        height: 50,
                         objectFit: "cover",
-                        borderRadius: 1,
+                        borderRadius: 0,
                       }}
                     />
                   ) : (
                     "-"
                   )}
-                </TableCell>
+                </StyledCell>
 
-                <TableCell>
-                  <Chip
-                    label={item?.status}
-                    color={item?.status === "active" ? "success" : "default"}
-                    size="small"
-                  />
-                </TableCell>
+                <StyledCell>
+                  <StatusText $active={item?.status === "active"}>
+                    {item?.status?.toUpperCase()}
+                  </StatusText>
+                </StyledCell>
 
-                <TableCell align="right">
+                <StyledCell align="center">
                   <IconButton
-                    color="primary"
                     onClick={() => openEditForm(item)}
+                    sx={{
+                      color: "#000",
+                      "&:hover": { color: "#eb3300" },
+                    }}
                   >
-                    Edit
+                    <Pencil size={16} />
                   </IconButton>
 
                   <IconButton
-                    color="error"
                     onClick={() => deleteItem(item?._id)}
+                    sx={{
+                      color: "#999",
+                      "&:hover": { color: "#eb3300" },
+                    }}
                   >
-                    Delete
+                    <Trash2 size={16} />
                   </IconButton>
-                </TableCell>
-              </TableRow>
+                </StyledCell>
+              </StyledRow>
             ))
           )}
         </TableBody>
       </Table>
-    </TableContainer>
+    </StyledTableContainer>
   );
 };
 
