@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Route, Routes } from "react-router";
 import PublicRoute from "./PublicRoute";
 import { useDispatch } from "react-redux";
@@ -17,14 +17,23 @@ const RegisterPage = React.lazy(
 
 const AppRouter = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
 
     if (token) {
-      dispatch(loginWithToken(token));
+      const timeout = new Promise((resolve) => setTimeout(resolve, 3000));
+
+      Promise.race([dispatch(loginWithToken(token)), timeout]).finally(() => {
+        setIsAuthChecked(true);
+      });
+    } else {
+      setTimeout(() => setIsAuthChecked(true), 0);
     }
   }, [dispatch]);
+
+  if (!isAuthChecked) return <div>...loading</div>;
 
   return (
     <Suspense fallback={<div>...loading</div>}>
