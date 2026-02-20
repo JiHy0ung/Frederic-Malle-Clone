@@ -66,5 +66,25 @@ const authController = {
             }
         }
     },
+    async checkAdminPermission(req, res, next) {
+        try {
+            const { userId } = req;
+            const user = await User_1.default.findById(userId);
+            if (!user) {
+                throw new Error("사용자를 찾을 수 없습니다.");
+            }
+            if (user.level !== "admin")
+                throw new Error("등록 권한이 없습니다.");
+            next();
+        }
+        catch (err) {
+            if (err instanceof Error) {
+                res.status(400).json({ status: "fail", error: err.message });
+            }
+            else {
+                res.status(400).json({ status: "fail", error: "Unknown error" });
+            }
+        }
+    },
 };
 exports.default = authController;

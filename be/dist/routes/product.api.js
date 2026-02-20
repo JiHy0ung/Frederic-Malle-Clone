@@ -4,11 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const product_controller_1 = __importDefault(require("../controllers/product.controller"));
+const auth_controller_1 = __importDefault(require("../controllers/auth.controller"));
 const router = express_1.default.Router();
-const user_api_1 = __importDefault(require("./user.api"));
-const auth_api_1 = __importDefault(require("./auth.api"));
-const product_api_1 = __importDefault(require("./product.api"));
-router.use("/user", user_api_1.default);
-router.use("/auth", auth_api_1.default);
-router.use("/product", product_api_1.default);
+router.post("/", auth_controller_1.default.authenticate, auth_controller_1.default.checkAdminPermission, product_controller_1.default.createProduct);
 exports.default = router;
