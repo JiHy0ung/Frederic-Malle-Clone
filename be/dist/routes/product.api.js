@@ -8,4 +8,5 @@ const product_controller_1 = __importDefault(require("../controllers/product.con
 const auth_controller_1 = __importDefault(require("../controllers/auth.controller"));
 const router = express_1.default.Router();
 router.post("/", auth_controller_1.default.authenticate, auth_controller_1.default.checkAdminPermission, product_controller_1.default.createProduct);
+router.get("/", product_controller_1.default.getProducts);
 exports.default = router;

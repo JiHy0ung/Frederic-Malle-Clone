@@ -46,6 +46,19 @@ const productController = {
       }
     }
   },
+  async getProducts(req: Request, res: Response) {
+    try {
+      const products = await Product.find({});
+
+      res.status(200).json({ status: "Get Products Success", data: products });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(400).json({ status: "fail", error: err.message });
+      } else {
+        res.status(400).json({ status: "fail", error: "Unknown error" });
+      }
+    }
+  },
 };
 
 export default productController;
