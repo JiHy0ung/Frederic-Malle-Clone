@@ -109,6 +109,11 @@ const Header = () => {
     navigate("/mypage");
   };
 
+  const handleAdmin = () => {
+    handleClose();
+    navigate("/admin/product");
+  };
+
   const handleLogout = () => {
     handleClose();
     dispatch(logout());
@@ -158,7 +163,11 @@ const Header = () => {
             </Box>
           </Box>
         )}
-        <StyledMenuItem onClick={handleMyPage}>마이페이지</StyledMenuItem>
+        {user?.level === "admin" ? (
+          <StyledMenuItem onClick={handleAdmin}>Admin Page</StyledMenuItem>
+        ) : (
+          <StyledMenuItem onClick={handleMyPage}>마이페이지</StyledMenuItem>
+        )}
         <StyledMenuItem onClick={handleLogout}>로그아웃</StyledMenuItem>
       </StyledMenu>
 

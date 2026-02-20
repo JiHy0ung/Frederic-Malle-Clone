@@ -7,11 +7,19 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ permissionLevel }: PrivateRouteProps) => {
-  const user = useSelector((state: RootState) => state.user.user);
+  const { user, loading } = useSelector((state: RootState) => state.user);
   const isAuthenticated =
     user?.level === permissionLevel || user?.level === "admin";
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/" />;
 };
 
 export default PrivateRoute;

@@ -63,11 +63,15 @@ export const loginWithEmail = createAsyncThunk<
 
 export const loginWithToken = createAsyncThunk<
   IUser,
-  void,
+  string,
   { rejectValue: string }
->("user/loginWithToken", async (_, { rejectWithValue }) => {
+>("user/loginWithToken", async (token, { rejectWithValue }) => {
   try {
-    const response = await api.get("/user/me");
+    const response = await api.get("/user/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data.user;
   } catch (error) {
     if (error && typeof error === "object" && "error" in error) {

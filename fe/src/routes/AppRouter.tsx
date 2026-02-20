@@ -5,6 +5,9 @@ import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../features/store";
 import { loginWithToken } from "../features/user/userSlice";
 import LandingPage from "../pages/LandingPage/LandingPage";
+import PrivateRoute from "./PrivateRoute";
+import AdminProductPage from "../pages/AdminProductPage/AdminProductPage";
+import AdminLayout from "../layout/AdminLayout";
 
 const AppLayout = React.lazy(() => import("../layout/AppLayout"));
 const LoginPage = React.lazy(() => import("../pages/LoginPage/LoginPage"));
@@ -19,7 +22,7 @@ const AppRouter = () => {
     const token = sessionStorage.getItem("token");
 
     if (token) {
-      dispatch(loginWithToken());
+      dispatch(loginWithToken(token));
     }
   }, [dispatch]);
 
@@ -31,6 +34,12 @@ const AppRouter = () => {
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+          </Route>
+        </Route>
+
+        <Route element={<AdminLayout />}>
+          <Route element={<PrivateRoute permissionLevel="admin" />}>
+            <Route path="/admin/product" element={<AdminProductPage />} />
           </Route>
         </Route>
       </Routes>
