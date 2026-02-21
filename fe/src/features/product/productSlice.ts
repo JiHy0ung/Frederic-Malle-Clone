@@ -23,6 +23,7 @@ interface ProductState {
   loading: boolean;
   error: string | null;
   success: boolean;
+  totalPageNum: number;
 }
 
 const initialState: ProductState = {
@@ -31,18 +32,33 @@ const initialState: ProductState = {
   loading: false,
   error: null,
   success: false,
+  totalPageNum: 1,
 };
 
+interface ProductQuery {
+  page?: number;
+  name?: string;
+}
+
+interface GetProductResponse {
+  data: IProduct[];
+  totalPageNum: number;
+}
+
 export const getProductList = createAsyncThunk<
-  IProduct[],
-  { name?: string } | undefined,
+  GetProductResponse,
+  ProductQuery | undefined,
   { rejectValue: string }
 >("product/getProductList", async (query, { rejectWithValue }) => {
   try {
     const response = await api.get("/product", {
       params: query,
     });
-    return response.data.data;
+
+    return {
+      data: response.data.data,
+      totalPageNum: response.data.totalPageNum,
+    };
   } catch (error: unknown) {
     if (error && typeof error === "object" && "error" in error) {
       return rejectWithValue((error as { error: string }).error);
@@ -124,7 +140,8 @@ const productSlice = createSlice({
       })
       .addCase(getProductList.fulfilled, (state, action) => {
         state.loading = false;
-        state.productList = action.payload;
+        state.productList = action.payload.data;
+        state.totalPageNum = action.payload.totalPageNum;
       })
       .addCase(getProductList.rejected, (state, action) => {
         state.loading = false;

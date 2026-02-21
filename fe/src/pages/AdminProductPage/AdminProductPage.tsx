@@ -1,4 +1,4 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, Pagination } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,6 +13,8 @@ import {
   setSelectedProduct,
   type IProduct,
 } from "../../features/product/productSlice";
+import SearchBox from "../../common/components/SearchBox";
+import { useNavigate, useSearchParams } from "react-router";
 
 const PageWrapper = styled(Box)({
   width: "100%",
@@ -41,20 +43,6 @@ const ControlBox = styled(Box)({
   gap: "1.5rem",
 });
 
-const SearchBox = styled(TextField)({
-  width: "20rem",
-  "& .MuiOutlinedInput-root": {
-    height: "2.65rem",
-    borderRadius: 0,
-    fontWeight: 300,
-
-    "& input": {
-      padding: "0 14px",
-      height: "100%",
-    },
-  },
-});
-
 const AddButton = styled(Button)({
   fontSize: "0.675rem",
   height: "2.65rem",
@@ -70,20 +58,63 @@ const AddButton = styled(Button)({
   },
 });
 
+const CustomPagination = styled(Pagination)({
+  "& .Mui-selected": {
+    backgroundColor: "#eb3300 !important",
+    color: "#fff",
+  },
+
+  "& .MuiPaginationItem-root:hover": {
+    backgroundColor: "#eb330020",
+  },
+});
+
+interface ProductSearchQuery {
+  page?: number;
+  name?: string;
+}
+
 const AdminProductPage = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { productList, selectedProduct } = useSelector(
+  const { productList, selectedProduct, totalPageNum } = useSelector(
     (state: RootState) => state.product,
   );
 
   const [showDialog, setShowDialog] = useState(false);
   const [mode, setMode] = useState<"new" | "edit">("new");
-  const [searchName, setSearchName] = useState("");
+
+  const [query] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState<ProductSearchQuery>({
+    page: Number(query.get("page")) || 1,
+    name: query.get("name") || undefined,
+  });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(getProductList({ name: searchName }));
-  }, [searchName, dispatch]);
+    dispatch(getProductList({ ...searchQuery }));
+  }, [searchQuery, dispatch]);
+
+  useEffect(() => {
+    const updatedQuery = { ...searchQuery };
+
+    if (updatedQuery.name === "") {
+      delete updatedQuery.name;
+    }
+
+    const params = new URLSearchParams(
+      Object.entries(updatedQuery).reduce(
+        (acc, [key, value]) => {
+          acc[key] = String(value);
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
+    );
+
+    const queryString = params.toString();
+    navigate(`?${queryString}`, { replace: true });
+  }, [searchQuery, navigate]);
 
   const deleteItem = (id: string) => {
     dispatch(deleteProduct(id));
@@ -100,15 +131,22 @@ const AdminProductPage = () => {
     setShowDialog(true);
   };
 
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setSearchQuery((prev) => ({
+      ...prev,
+      page: value,
+    }));
+  };
+
   return (
     <PageWrapper>
       <HeaderSection>
         <ControlBox>
           <SearchBox
-            variant="outlined"
-            placeholder="Search by name"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            placeholder="제품 이름으로 검색"
+            field="name"
           />
 
           <AddButton onClick={handleClickNewItem}>ADD PRODUCT</AddButton>
@@ -120,6 +158,15 @@ const AdminProductPage = () => {
         deleteItem={deleteItem}
         openEditForm={openEditForm}
       />
+
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CustomPagination
+          count={totalPageNum}
+          page={searchQuery.page || 1}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
 
       <NewItemDialog
         key={
