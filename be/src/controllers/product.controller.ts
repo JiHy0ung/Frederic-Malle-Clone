@@ -50,9 +50,10 @@ const productController = {
   },
   async getProducts(req: Request, res: Response) {
     try {
-      const { page, name } = req.query;
+      const { page, name, limit } = req.query;
 
       const pageNum = Number(page) || 1;
+      const limitNum = Number(limit) || PAGE_SIZE;
       const nameStr = typeof name === "string" ? name : undefined;
 
       const condition = nameStr
@@ -62,29 +63,19 @@ const productController = {
       let query = Product.find(condition);
 
       const totalItemNum = await Product.countDocuments(condition);
-      const totalPageNum = Math.ceil(totalItemNum / PAGE_SIZE);
+      const totalPageNum = Math.ceil(totalItemNum / limitNum);
 
-      query.skip((pageNum - 1) * PAGE_SIZE).limit(PAGE_SIZE);
+      query.skip((pageNum - 1) * limitNum).limit(limitNum);
 
       const productList = await query.exec();
 
-      let response: {
-        status: string;
-        totalPageNum: number;
-        data: typeof productList;
-      } = {
+      res.status(200).json({
         status: "Get Products Success",
         totalPageNum,
         data: productList,
-      };
-
-      res.status(200).json(response);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        res.status(400).json({ status: "fail", error: err.message });
-      } else {
-        res.status(400).json({ status: "fail", error: "Unknown error" });
-      }
+      });
+    } catch (err) {
+      res.status(400).json({ status: "fail", error: "Unknown error" });
     }
   },
 };
