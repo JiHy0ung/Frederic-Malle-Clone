@@ -45,7 +45,7 @@ const ControlBox = styled(Box)({
 
 const AddButton = styled(Button)({
   fontSize: "0.675rem",
-  height: "2.65rem",
+  height: "2rem",
   backgroundColor: "#000",
   color: "#fff",
   borderRadius: 0,
