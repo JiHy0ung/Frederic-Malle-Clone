@@ -143,7 +143,6 @@ const AdminProductPage = () => {
       <HeaderSection>
         <ControlBox>
           <SearchBox
-            searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             placeholder="제품 이름으로 검색"
             field="name"

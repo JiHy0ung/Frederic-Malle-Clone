@@ -1,6 +1,6 @@
 import { Box, IconButton, Menu, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { logout } from "../../features/user/userSlice";
@@ -8,6 +8,7 @@ import type { RootState, AppDispatch } from "../../features/store";
 
 import Logo from "../../assets/Fredericmalle_logo.png";
 import { Search, User } from "lucide-react";
+import SearchBox from "../../common/components/SearchBox";
 
 const HeaderContainer = styled(Box)({
   position: "relative",
@@ -82,15 +83,35 @@ const StyledMenuItem = styled(MenuItem)({
   },
 });
 
+const SlideWrapper = styled("div")<{ open: boolean }>(({ open }) => ({
+  width: open ? "" : "0px",
+  overflow: "hidden",
+  transition: "all 0.3s ease",
+  opacity: open ? 1 : 0,
+}));
+
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.user);
+  const [showSearch, setShowSearch] = useState(false);
 
-  console.log("user", user);
+  const [searchQuery, setSearchQuery] = useState<{
+    page?: number;
+    name?: string;
+  }>({
+    page: 1,
+    name: "",
+  });
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  useEffect(() => {
+    if (searchQuery.name) {
+      navigate(`/search?name=${searchQuery.name}`);
+    }
+  }, [searchQuery, navigate]);
 
   const handleUserIconClick = (event: React.MouseEvent<HTMLElement>) => {
     if (user) {
@@ -120,14 +141,29 @@ const Header = () => {
     navigate("/");
   };
 
+  const handleSearchClick = () => {
+    setShowSearch((prev) => !prev);
+  };
+
   return (
     <HeaderContainer>
       <SearchContainer>
         <LogoImage src={Logo} alt="logo-image" onClick={() => navigate("/")} />
         <RightIcons>
-          <IconButton>
-            <Search strokeWidth={1} color="white" />
-          </IconButton>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <SlideWrapper open={showSearch}>
+              <SearchBox
+                setSearchQuery={setSearchQuery}
+                placeholder="Search..."
+                field="name"
+              />
+            </SlideWrapper>
+
+            <IconButton onClick={handleSearchClick}>
+              <Search strokeWidth={1} color="white" />
+            </IconButton>
+          </Box>
+
           <IconButton onClick={handleUserIconClick}>
             <User strokeWidth={1} color="white" />
           </IconButton>

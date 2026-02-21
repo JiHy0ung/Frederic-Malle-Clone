@@ -8,16 +8,16 @@ type StringKeys<T> = {
 }[keyof T];
 
 interface SearchBoxProps<T> {
-  searchQuery: T;
   setSearchQuery: React.Dispatch<React.SetStateAction<T>>;
   placeholder: string;
   field: StringKeys<T>;
 }
 
 const SearchContainer = styled(TextField)({
-  width: "20rem",
+  background: "#ffffff",
   "& .MuiOutlinedInput-root": {
-    height: "2.65rem",
+    fontSize: "0.875rem",
+    height: "2rem",
     borderRadius: 0,
     fontWeight: 300,
 
@@ -29,7 +29,6 @@ const SearchContainer = styled(TextField)({
 });
 
 const SearchBox = <T extends { page?: number }>({
-  searchQuery,
   setSearchQuery,
   placeholder,
   field,

@@ -38,6 +38,7 @@ const initialState: ProductState = {
 interface ProductQuery {
   page?: number;
   name?: string;
+  limit?: number;
 }
 
 interface GetProductResponse {
