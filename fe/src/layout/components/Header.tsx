@@ -109,7 +109,9 @@ const Header = () => {
 
   useEffect(() => {
     if (searchQuery.name) {
-      navigate(`/search?name=${searchQuery.name}`);
+      navigate(`/?name=${searchQuery.name}`);
+    } else {
+      navigate(`/`);
     }
   }, [searchQuery, navigate]);
 

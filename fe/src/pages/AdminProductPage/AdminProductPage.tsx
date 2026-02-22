@@ -69,7 +69,7 @@ const CustomPagination = styled(Pagination)({
   },
 });
 
-interface ProductSearchQuery {
+export interface ProductSearchQuery {
   page?: number;
   name?: string;
 }
@@ -113,6 +113,7 @@ const AdminProductPage = () => {
     );
 
     const queryString = params.toString();
+    console.log("queryString", queryString);
     navigate(`?${queryString}`, { replace: true });
   }, [searchQuery, navigate]);
 

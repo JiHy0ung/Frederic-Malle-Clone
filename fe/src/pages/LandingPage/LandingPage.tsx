@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router"; // ✅ 추가
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,15 +17,25 @@ const Container = styled(Box)({
 
 const LandingPage = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const location = useLocation(); // ✅ 반드시 필요
+
   const { productList, loading, error } = useSelector(
     (state: RootState) => state.product,
   );
 
-  console.log("productList", productList);
+  const queryParams = new URLSearchParams(location.search);
+  const name = queryParams.get("name");
 
+  // ✅ useEffect 하나만 사용
   useEffect(() => {
-    dispatch(getProductList({ page: 1, limit: 20 }));
-  }, [dispatch]);
+    dispatch(
+      getProductList({
+        page: 1,
+        limit: 20,
+        ...(name && name.trim() !== "" && { name }),
+      }),
+    );
+  }, [dispatch, name]);
 
   if (loading) {
     return (
@@ -44,14 +55,18 @@ const LandingPage = () => {
 
   return (
     <Container>
-      {productList.map((product) => (
-        <ProductCard
-          key={product._id}
-          image={product.image}
-          name={product.name}
-          price={product.price}
-        />
-      ))}
+      {productList.length === 0 ? (
+        <Typography>검색 결과가 없습니다.</Typography>
+      ) : (
+        productList.map((product) => (
+          <ProductCard
+            key={product._id}
+            image={product.image}
+            name={product.name}
+            price={product.price}
+          />
+        ))
+      )}
     </Container>
   );
 };
