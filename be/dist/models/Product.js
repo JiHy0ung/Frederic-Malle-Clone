@@ -22,6 +22,9 @@ productSchema.methods.toJSON = function () {
     delete obj.updatedAt;
     delete obj.createdAt;
     delete obj.__v;
+    if (obj.stock instanceof Map) {
+        obj.stock = Object.fromEntries(obj.stock);
+    }
     return obj;
 };
 const Product = mongoose_1.default.model("Product", productSchema);
