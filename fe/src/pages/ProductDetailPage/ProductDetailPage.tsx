@@ -179,12 +179,10 @@ const ProductDetailPage = () => {
   return (
     <PageWrapper>
       <Inner>
-        {/* 이미지 */}
         <Box>
           <ProductImage src={product.image} alt={product.name} />
         </Box>
 
-        {/* 정보 */}
         <RightPanel>
           {product.category && <Label>{product.category.join(" / ")}</Label>}
 
@@ -194,7 +192,6 @@ const ProductDetailPage = () => {
 
           <Divider sx={{ mb: 3, borderColor: "#eee" }} />
 
-          {/* 사이즈 선택 */}
           {stockEntries.length > 0 && (
             <Box sx={{ mb: 3 }}>
               <Label sx={{ mb: 1.5 }}>
@@ -218,7 +215,6 @@ const ProductDetailPage = () => {
             </Box>
           )}
 
-          {/* 수량 선택 */}
           <Box sx={{ mb: 3 }}>
             <Label sx={{ mb: 1.5 }}>QUANTITY</Label>
             <Box sx={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
@@ -240,7 +236,6 @@ const ProductDetailPage = () => {
 
           <Divider sx={{ mb: 3, borderColor: "#eee" }} />
 
-          {/* 버튼 */}
           <Box
             sx={{
               display: "flex",
@@ -267,7 +262,6 @@ const ProductDetailPage = () => {
 
           <Divider sx={{ mb: 3, borderColor: "#eee" }} />
 
-          {/* 설명 */}
           {product.description && (
             <Box>
               <Label sx={{ mb: 1.5 }}>Description</Label>

@@ -2,7 +2,7 @@ import { Box, IconButton, Menu, MenuItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { logout } from "../../features/user/userSlice";
 import type { RootState, AppDispatch } from "../../features/store";
 
@@ -107,13 +107,19 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  const location = useLocation();
+
   useEffect(() => {
+    if (!location.pathname.startsWith("/")) return;
+
+    if (location.pathname !== "/") return;
+
     if (searchQuery.name) {
       navigate(`/?name=${searchQuery.name}`);
     } else {
       navigate(`/`);
     }
-  }, [searchQuery, navigate]);
+  }, [searchQuery, navigate, location.pathname]);
 
   const handleUserIconClick = (event: React.MouseEvent<HTMLElement>) => {
     if (user) {
