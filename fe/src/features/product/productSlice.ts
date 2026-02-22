@@ -68,6 +68,27 @@ export const getProductList = createAsyncThunk<
   }
 });
 
+export const getProductDetail = createAsyncThunk<
+  IProduct,
+  string,
+  { rejectValue: string }
+>(
+  "products/getProductDetail",
+
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/product/${id}`);
+
+      return response.data.data;
+    } catch (error) {
+      if (error && typeof error === "object" && "error" in error) {
+        return rejectWithValue((error as { error: string }).error);
+      }
+      return rejectWithValue("상품 상세 정보 가져오기 실패");
+    }
+  },
+);
+
 export const createProduct = createAsyncThunk<
   IProduct,
   Partial<IProduct>,
@@ -175,6 +196,19 @@ const productSlice = createSlice({
       })
       .addCase(deleteProduct.rejected, (state, action) => {
         state.error = action.payload || "삭제 실패";
+      })
+
+      .addCase(getProductDetail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getProductDetail.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedProduct = action.payload;
+      })
+      .addCase(getProductDetail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as string) || "상품 불러오기 실패";
       });
   },
 });

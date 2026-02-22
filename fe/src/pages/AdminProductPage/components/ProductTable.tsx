@@ -59,6 +59,7 @@ interface Props {
 }
 
 const ProductTable: React.FC<Props> = ({ data, deleteItem, openEditForm }) => {
+  console.log("data", data);
   return (
     <StyledTableContainer>
       <Table>
@@ -100,7 +101,13 @@ const ProductTable: React.FC<Props> = ({ data, deleteItem, openEditForm }) => {
                   ₩ {item?.price?.toLocaleString()}
                 </StyledCell>
 
-                <StyledCell>
+                <StyledCell
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "start",
+                  }}
+                >
                   {Object.entries(item?.stock || {}).map(([size, qty]) => (
                     <Typography
                       key={`${item._id}-${size}`}

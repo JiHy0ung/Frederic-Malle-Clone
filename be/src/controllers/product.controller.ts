@@ -112,6 +112,29 @@ const productController = {
       }
     }
   },
+  async getProductById(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const product = await Product.findOne({ _id: id });
+
+      if (!product) {
+        throw new Error("삭제되거나 존재하지 않는 상품입니다.");
+      }
+
+      res.status(200).json({ status: "Get Product  Success", data: product });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res
+          .status(400)
+          .json({ status: "Get Product Fail", error: err.message });
+      } else {
+        res
+          .status(400)
+          .json({ status: "Get Product Fail", error: "Unknown error" });
+      }
+    }
+  },
 };
 
 export default productController;

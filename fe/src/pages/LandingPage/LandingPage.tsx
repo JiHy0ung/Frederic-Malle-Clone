@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router"; // ✅ 추가
+import { useLocation } from "react-router";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,7 +17,7 @@ const Container = styled(Box)({
 
 const LandingPage = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const location = useLocation(); // ✅ 반드시 필요
+  const location = useLocation();
 
   const { productList, loading, error } = useSelector(
     (state: RootState) => state.product,
@@ -26,7 +26,6 @@ const LandingPage = () => {
   const queryParams = new URLSearchParams(location.search);
   const name = queryParams.get("name");
 
-  // ✅ useEffect 하나만 사용
   useEffect(() => {
     dispatch(
       getProductList({
@@ -60,6 +59,7 @@ const LandingPage = () => {
       ) : (
         productList.map((product) => (
           <ProductCard
+            _id={product._id}
             key={product._id}
             image={product.image}
             name={product.name}

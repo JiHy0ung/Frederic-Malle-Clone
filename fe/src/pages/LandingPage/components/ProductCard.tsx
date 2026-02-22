@@ -1,7 +1,9 @@
 import { Card, CardContent, CardMedia, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useNavigate } from "react-router";
 
 interface ProductCardProps {
+  _id: string;
   image: string;
   name: string;
   price: number;
@@ -26,9 +28,10 @@ const StyledImage = styled(CardMedia)({
   transition: "transform 0.4s ease",
 });
 
-const ProductCard = ({ image, name, price }: ProductCardProps) => {
+const ProductCard = ({ _id, image, name, price }: ProductCardProps) => {
+  const navigate = useNavigate();
   return (
-    <StyledCard>
+    <StyledCard onClick={() => navigate(`/product/${_id}`)}>
       <StyledImage image={image} />
       <CardContent sx={{ padding: "16px 0" }}>
         <Typography sx={{ fontWeight: 500, marginBottom: "4px" }}>

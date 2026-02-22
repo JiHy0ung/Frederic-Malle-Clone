@@ -8,6 +8,7 @@ import LandingPage from "../pages/LandingPage/LandingPage";
 import PrivateRoute from "./PrivateRoute";
 import AdminProductPage from "../pages/AdminProductPage/AdminProductPage";
 import AdminLayout from "../layout/AdminLayout";
+import ProductDetailPage from "../pages/ProductDetailPage/ProductDetailPage";
 
 const AppLayout = React.lazy(() => import("../layout/AppLayout"));
 const LoginPage = React.lazy(() => import("../pages/LoginPage/LoginPage"));
@@ -40,6 +41,8 @@ const AppRouter = () => {
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
+
           <Route element={<PublicRoute />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
