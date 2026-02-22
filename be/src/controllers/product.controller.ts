@@ -78,6 +78,40 @@ const productController = {
       res.status(400).json({ status: "fail", error: "Unknown error" });
     }
   },
+  async updateProduct(req: Request, res: Response) {
+    try {
+      const productId = req.params.id;
+      const {
+        sku,
+        name,
+        size,
+        description,
+        stock,
+        image,
+        price,
+        category,
+        status,
+      } = req.body;
+
+      const product = await Product.findByIdAndUpdate(
+        { _id: productId },
+        { sku, name, size, description, stock, image, price, category, status },
+        { new: true },
+      );
+
+      if (!product) {
+        throw new Error("삭제되거나 존재하지 않는 상품입니다.");
+      }
+
+      res.status(200).json({ status: "Add Item Success", data: product });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(400).json({ status: "fail", error: err.message });
+      } else {
+        res.status(400).json({ status: "fail", error: "Unknown error" });
+      }
+    }
+  },
 };
 
 export default productController;

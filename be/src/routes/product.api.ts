@@ -10,6 +10,13 @@ router.post(
   productController.createProduct,
 );
 
+router.put(
+  "/:id",
+  authController.authenticate,
+  authController.checkAdminPermission,
+  productController.updateProduct,
+);
+
 router.get("/", productController.getProducts);
 
 export default router;
